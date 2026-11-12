@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PepMinder case study: shipping an Android app QA-first | Tim Duffy</title>
+<meta name="description" content="How Tim Duffy shipped PepMinder, an Android app on Google Play, by directing AI development with a QA-first process: test-driven development, 4,334 automated tests, 95.7% coverage and emulator testing.">
+<meta property="og:title" content="PepMinder: shipping an Android app QA-first">
+<meta property="og:description" content="4,334 automated tests, 95.7% line coverage, 160 issues logged in one regression pass, and 1,090+ installs on Google Play.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Schibsted+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2318212b'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='%23fff' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="../../">Tim Duffy</a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="./" aria-current="page">PepMinder case study</a>
+      <a href="../../#automation">Automation</a>
+      <a href="../../#experience">Experience</a>
+      <a href="../../#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="cs-hero" aria-labelledby="cs-title">
+    <div class="wrap">
+      <div>
+        <p class="crumb"><a href="../../">Back to overview</a></p>
+        <div class="app-id"><img src="../../assets/img/pepminder-icon.png" width="44" height="44" alt=""> PepMinder for Android</div>
+        <h1 id="cs-title">Shipping an Android app QA-first, with AI writing the code</h1>
+        <p class="lede">I built PepMinder with Claude Code as the developer and myself as product owner and QA lead. Twenty years of testing experience decided how it was built: tests first, every change verified, and Android edge cases tried on emulators before users ever found them.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://play.google.com/store/apps/details?id=com.pepminder.pep_minder">View on Google Play</a>
+          <a class="btn" href="https://pepminder.app">pepminder.app</a>
+        </div>
+      </div>
+      <img src="../../assets/img/phone-calculator.png" width="324" height="684" alt="PepMinder's dose calculator on Android, showing a syringe filled to 10 units for a 250 mcg dose.">
+    </div>
+  </section>
+
+  <section aria-label="Results" style="padding-top:0;border-top:0">
+    <div class="wrap">
+      <dl class="scoreboard">
+        <div><dt>Automated tests</dt><dd>4,334</dd></div>
+        <div><dt>Line coverage</dt><dd>95.7%<span class="note">was 56.8%</span></dd></div>
+        <div><dt>Installs</dt><dd>1,090+<span class="note">and growing</span></dd></div>
+        <div><dt>Revenue</dt><dd>~$200<span class="note">per month and growing</span></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section aria-labelledby="role-title">
+    <div class="wrap two-col">
+      <div class="prose">
+        <h2 id="role-title">The problem with AI-written code</h2>
+        <p>An AI coding assistant will write a feature quickly, and it will also say the feature works when it hasn't checked. On a reminder app that's a real risk: a missed or duplicate reminder means someone takes a dose at the wrong time.</p>
+        <p>So I treated Claude Code the way I'd treat a fast new developer on my QA team. I wrote the rules of engagement into the project's instruction file before any code existed, and held every session to them. The app has 417 commits from January to October 2026, released from v1.0 through v1.3.2.</p>
+        <h3>What I owned</h3>
+        <ul class="checklist">
+          <li>Product scope, features and release decisions</li>
+          <li>Test strategy, coverage targets and the definition of done</li>
+          <li>Regression planning, defect triage and sign-off</li>
+          <li>Hands-on testing on Android emulators and devices</li>
+          <li>CI/CD gates, store listing and launch</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Rules I set for the AI, in my own words</h3>
+        <ol class="rules">
+          <li><strong>Tests come first.</strong><q>Write tests first, then code to pass them. No feature is complete without passing tests.</q><span class="src">Red, green, refactor for every feature: the failing test is written and run before the code.</span></li>
+          <li><strong>Coverage is a target, not an afterthought.</strong><q>Aim for 80%+ coverage.</q><span class="src">Unit tests for the dose math, schedules and inventory; widget tests for every interaction.</span></li>
+          <li><strong>Accessibility from day one.</strong><q>Plan for dark mode, large text, voice-over from the start.</q><span class="src">Not a pass at the end of the project.</span></li>
+          <li><strong>Nothing merges red.</strong><q>Only commit if: All tests pass, feature is fully functional, no pending TODOs.</q><span class="src">One feature per commit, so any regression points to a single change.</span></li>
+          <li><strong>Test on the real platform.</strong><span class="src" style="margin-top:0">Manual and scripted runs on Android emulators, not just on the desktop test runner.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="layers-title">
+    <div class="wrap">
+      <div class="section-intro">
+        <h2 id="layers-title">Four layers of automated testing</h2>
+        <p>The suite has 165 test files. Each layer catches a different kind of failure, and fast layers run on every change.</p>
+      </div>
+      <div class="work">
+        <article>
+          <h3>Unit tests</h3>
+          <p class="tools">Flutter test, fake services, injectable clock</p>
+          <p>Dose and concentration math, schedule and interval calculations, database migrations, backup and restore, purchases, and notification scheduling, including runs pinned to a US time zone so daylight saving changes are tested every time.</p>
+        </article>
+        <article>
+          <h3>Widget tests</h3>
+          <p class="tools">flutter_test, shared test harness</p>
+          <p>Taps, forms, dialogs and navigation on every screen, plus a 338-case screen matrix that renders each screen at small widths and large text sizes with real fonts.</p>
+        </article>
+        <article>
+          <h3>Golden tests</h3>
+          <p class="tools">96 reference images</p>
+          <p>Pixel comparisons of key screens in light mode, dark mode, milligram units and large text. Any unintended visual change fails the build.</p>
+        </article>
+        <article>
+          <h3>Integration tests on Android</h3>
+          <p class="tools">integration_test, Android emulator</p>
+          <p>End-to-end flows from a fresh install: add a peptide, reconstitute it, schedule it, mark a dose taken and find it in the log; free-tier limits opening the paywall; backup and restore round trips; dark mode; and the setup wizard. 41 of 41 passed on the emulator at release sign-off.</p>
+        </article>
+      </div>
+      <div class="goldens">
+        <figure>
+          <img src="../../assets/img/golden-home-doses-light.png" width="393" height="852" alt="Golden test image of the home screen at normal text size. Text renders as solid blocks, the standard test font, so only layout is compared.">
+          <figcaption>Home screen golden at normal text size</figcaption>
+        </figure>
+        <figure>
+          <img src="../../assets/img/golden-home-doses-large-text-light.png" width="393" height="852" alt="The same golden at large text size. Cards grow taller and text wraps without clipping.">
+          <figcaption>The same screen at large text. Golden tests use a block font, so only the layout is compared.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="reg-title">
+    <div class="wrap">
+      <div class="section-intro">
+        <h2 id="reg-title">A full regression pass before v1.3.0</h2>
+        <p>Before the v1.3.0 release I stopped feature work and ran a structured regression effort. I started by inventorying every screen, widget, service and route against the existing tests to find what had never been tested.</p>
+      </div>
+      <div class="two-col">
+        <div class="compare">
+          <div>
+            <h3>Automated tests</h3>
+            <div class="bar"><span class="label">Before</span><span class="track"><span class="fill" style="width:48.6%"></span></span><span class="val">2,107</span></div>
+            <div class="bar after"><span class="label">After</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">4,334</span></div>
+          </div>
+          <div>
+            <h3>Line coverage</h3>
+            <div class="bar"><span class="label">Before</span><span class="track"><span class="fill" style="width:56.8%"></span></span><span class="val">56.8%</span></div>
+            <div class="bar after"><span class="label">After</span><span class="track"><span class="fill" style="width:95.7%"></span></span><span class="val">95.7%</span></div>
+          </div>
+          <p class="small muted">Coverage excludes generated code. At the start, reminders were 9% covered and purchases 5%, the two areas where a bug costs the most.</p>
+        </div>
+        <div class="prose">
+          <h3>How it ran</h3>
+          <p>I split the work by risk. The most serious defects, missed or wrong reminders and data loss, were fixed first and test-first: a failing test that reproduced the bug, then the fix. I ran parallel AI agents on separate parts of the codebase, then reviewed and merged their work and checked that no test file had lost tests.</p>
+          <p>160 issues were logged and tracked by ID with the commit that fixed each one. A handful of low-priority items were deferred with my sign-off.</p>
+        </div>
+      </div>
+      <ol class="phases">
+        <li><strong>Baseline</strong><span>Inventory and coverage map</span></li>
+        <li><strong>Fix weak tests</strong><span>Tests that passed without checking anything</span></li>
+        <li><strong>Critical defects</strong><span>Test-first fixes</span></li>
+        <li><strong>Unit and widget gaps</strong><span>Every service and screen</span></li>
+        <li><strong>Golden tests</strong><span>Dark mode, units, large text</span></li>
+        <li><strong>Integration rewrite</strong><span>End-to-end flows</span></li>
+        <li><strong>Emulator pass</strong><span>Two Android emulators, every screen</span></li>
+        <li><strong>Remaining defects</strong><span>Fix and re-verify</span></li>
+        <li><strong>Guards</strong><span>CI gates so the bugs stay fixed</span></li>
+        <li><strong>Sign-off</strong><span>Release candidate approved</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="bugs-title">
+    <div class="wrap">
+      <div class="section-intro">
+        <h2 id="bugs-title">Four bugs the regression pass caught</h2>
+        <p>Each one is the kind of bug that slips past a quick manual check. Each one now has a test that fails if it comes back.</p>
+      </div>
+      <div class="bugs">
+        <article class="bug">
+          <h3>Reminders shifted an hour after daylight saving</h3>
+          <p>Every-few-days reminders added days to a local date-time, so after the March clock change an 8:00 AM reminder fired at 9:00 AM. A related bug made notification IDs collide just after midnight on the day after the change.</p>
+          <p class="caught">Caught by unit tests that run in a fixed US time zone across the March 8, 2026 change.</p>
+        </article>
+        <article class="bug">
+          <h3>A failed restore could erase everything</h3>
+          <p>Restoring a backup deleted the existing data first and had no transaction. One bad record partway through left the user with an empty app.</p>
+          <p class="caught">Caught by a test that restores a deliberately corrupted backup and checks the original data survives.</p>
+        </article>
+        <article class="bug">
+          <h3>Deleted schedules kept reminding</h3>
+          <p>Reminders were rebuilt before the schedule was deleted from the database, so a deleted schedule kept sending notifications. Archived items and snoozed reminders had similar gaps.</p>
+          <p class="caught">Caught by widget and scheduler tests that delete, pause and archive, then check what is still pending.</p>
+        </article>
+        <article class="bug">
+          <h3>Android 14 scales large text differently</h3>
+          <p>At 200% text on a small screen, a card was still clipped after it had passed the automated matrix. Android 14 and later scale large text non-linearly, so the fix based on font size was wrong. Labels like "Calculator" also broke mid-word.</p>
+          <p class="caught">Caught by hand on the Android emulator, then added to the screen matrix, which found one more.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="android-title">
+    <div class="wrap two-col">
+      <div class="prose">
+        <h2 id="android-title">Android-specific testing</h2>
+        <p>Desktop test runners can't show how an app behaves on a real Android system, so I ran scripted passes on two emulator profiles: a medium phone on API 36 and a Pixel 6.</p>
+        <ul class="checklist">
+          <li>Reminders after a reboot, a time zone change and a daylight saving change, using clock jumps on the emulator</li>
+          <li>Notification actions (Taken, Snooze) with the app in the foreground and in the background</li>
+          <li>Upgrade from the previous Play Store version with existing data</li>
+          <li>200% font scale on a 320 dp-wide screen, dark mode and TalkBack</li>
+          <li>Android manifest permissions checked by a unit test</li>
+          <li>Release-build checks before sign-off</li>
+        </ul>
+      </div>
+      <div class="prose">
+        <h2>Gates in CI</h2>
+        <p>Every push to main builds an Android release in Codemagic. The build stops at the first gate that fails, so nothing reaches Google Play without passing all of them.</p>
+        <ol class="pipeline" aria-label="Release pipeline steps">
+          <li>Unit and widget tests</li>
+          <li>Coverage of at least 93%</li>
+          <li>Format check</li>
+          <li>Signed app bundle</li>
+          <li>Google Play internal track</li>
+        </ol>
+        <p>Tests run with the time zone set to America/New_York, so daylight saving bugs show up in CI rather than in March. A date-arithmetic scan flags the risky pattern behind the DST bug if it appears anywhere new.</p>
+        <h3>What this shows</h3>
+        <p>AI can write most of the code. It can't decide what "working" means, which edge cases matter, or when a release is safe. That judgment is the QA job, and it's why PepMinder shipped with 4,334 tests instead of a list of known bugs.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact" aria-labelledby="contact-title">
+    <div class="wrap">
+      <h2 id="contact-title">Want to talk about how I'd test your app?</h2>
+      <p>I'm looking for a role in QA leadership, quality engineering or test automation, including mobile.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="mailto:tduffy32@gmail.com">tduffy32@gmail.com</a>
+        <a class="btn" href="https://www.linkedin.com/in/timothyduffy-qa">LinkedIn profile</a>
+        <a class="btn" href="../../">Back to overview</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>Tim Duffy, Foxborough, MA</span>
+    <span>Figures from PepMinder's regression test plan and repository, October 2026.</span>
+  </div>
+</footer>
+</body>
+</html>
