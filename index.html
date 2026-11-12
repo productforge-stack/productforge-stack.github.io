@@ -22,6 +22,7 @@
     <a class="brand" href="./">Tim Duffy</a>
     <nav class="site-nav" aria-label="Main">
       <a href="work/pepminder/">PepMinder case study</a>
+      <a href="work/payment-sandbox/">Payment integration</a>
       <a href="#automation">Automation</a>
       <a href="#experience">Experience</a>
       <a href="#contact">Contact</a>
@@ -36,7 +37,7 @@
       <div>
         <p class="hero-role">Senior Quality Engineer and former QA Director</p>
         <h1 id="hero-title">I find what breaks before your customers do.</h1>
-        <p class="lede">Twenty years in software QA, sixteen of them in payments and point-of-sale. I lead test strategy, build test automation with AI, and recently shipped my own Android app with 4,334 automated tests behind it.</p>
+        <p class="lede">Twenty years in software QA, sixteen of them in payments and point-of-sale. I support Verifone payment integrations in the field, build test automation with AI, and recently shipped my own Android app with 4,334 automated tests behind it.</p>
         <div class="actions">
           <a class="btn btn-primary" href="work/pepminder/">Read the PepMinder case study</a>
           <a class="btn" href="https://www.linkedin.com/in/timothyduffy-qa">LinkedIn profile</a>
@@ -91,6 +92,24 @@
           </div>
         </div>
         <img class="feature-phone" src="assets/img/phone-home.png" width="324" height="684" alt="PepMinder home screen on an Android phone, showing today's logged doses, an active cycle and upcoming doses.">
+      </div>
+    </div>
+  </section>
+
+
+  <section id="payment-sandbox" class="flush" aria-labelledby="ps-title">
+    <div class="wrap">
+      <div class="feature feature-text">
+        <div>
+          <span class="tag">Kotlin and Android, tested in CI</span>
+          <h2 id="ps-title">Payment Integration Sandbox: no double charges</h2>
+          <p>A Kotlin library and Android app that integrates with a payment gateway's REST API and recovers from timeouts, gateway errors and dropped connections without ever charging a card twice. Every push runs JVM, HTTP and Android emulator tests, and the build fails if the payment library's coverage drops below 90%.</p>
+          <p>It ships with what I'd hand a customer: an integration guide, a troubleshooting table, and a Claude skill that reviews an integration against the same rules.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="work/payment-sandbox/">Read the case study</a>
+            <a class="btn" href="https://github.com/productforge-stack/payment-integration-sandbox">View the code on GitHub</a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -192,11 +211,11 @@
           </div>
           <div>
             <h3>Automation</h3>
-            <p>Claude Code, agent skills and MCP. Selenium WebDriver, NUnit, C#/.NET, Playwright, Flutter test and integration_test, Bitbucket Pipelines, Codemagic, Git.</p>
+            <p>Claude Code, agent skills and MCP. Selenium WebDriver, NUnit, C#/.NET, Playwright, Flutter test and integration_test, JUnit, MockWebServer, Bitbucket Pipelines, GitHub Actions, Codemagic, Git.</p>
           </div>
           <div>
             <h3>Mobile</h3>
-            <p>Android emulator testing, widget and golden tests, accessibility at large text sizes and with TalkBack, notification and time zone edge cases, Play Store releases.</p>
+            <p>Kotlin, Jetpack Compose and Android Studio. Flutter/Dart. Android emulator testing, Compose UI tests, widget and golden tests, accessibility at large text sizes and with TalkBack, Play Store releases.</p>
           </div>
           <div>
             <h3>Payments and data</h3>

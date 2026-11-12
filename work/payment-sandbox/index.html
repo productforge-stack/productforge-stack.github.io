@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payment Integration Sandbox: Kotlin, Android and safe retries | Tim Duffy</title>
+<meta name="description" content="A Kotlin library and Android app that integrates with a payment gateway's REST API and recovers from timeouts without double-charging, tested on the JVM and on an Android emulator in CI.">
+<meta property="og:title" content="Payment Integration Sandbox: Kotlin, Android and safe retries">
+<meta property="og:description" content="A Kotlin and Android payment integration that never double-charges, with JVM, HTTP and emulator tests in CI.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Schibsted+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2318212b'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='%23fff' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="../../">Tim Duffy</a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="../pepminder/">PepMinder case study</a>
+      <a href="./" aria-current="page">Payment integration</a>
+      <a href="../../#experience">Experience</a>
+      <a href="../../#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="cs-hero cs-hero-text" aria-labelledby="cs-title">
+    <div class="wrap">
+      <div>
+        <p class="crumb"><a href="../../">Back to overview</a></p>
+        <p class="hero-role">Kotlin, Java interop, Android, REST</p>
+        <h1 id="cs-title">A payment integration that never charges a card twice</h1>
+        <p class="lede">For sixteen years I've watched payment integrations fail in the field, and the costliest failure is always the same: the network drops after the card is charged, the app retries, and the customer pays twice. I built this Kotlin library and Android app to show how an integration should handle it.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://github.com/productforge-stack/payment-integration-sandbox">View the code on GitHub</a>
+          <a class="btn" href="https://github.com/productforge-stack/payment-integration-sandbox/blob/main/docs/INTEGRATION_GUIDE.md">Read the integration guide</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-label="Results" class="flush">
+    <div class="wrap">
+      <dl class="scoreboard">
+        <div><dt>Automated tests</dt><dd>65<span class="note">51 library, 9 app, 5 on an emulator</span></dd></div>
+        <div><dt>Library line coverage</dt><dd>99.6%<span class="note">build fails below 90%</span></dd></div>
+        <div><dt>Failure scenarios</dt><dd>6</dd></div>
+        <div><dt>Double charges</dt><dd>0<span class="note">charge counts asserted in tests</span></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section aria-labelledby="rule-title">
+    <div class="wrap two-col">
+      <div class="prose">
+        <h2 id="rule-title">The rule that prevents double charges</h2>
+        <p>When a request times out or the gateway returns a 5xx, the app doesn't know whether the card was charged. Treating that as "failed" and trying again is how customers get charged twice. Treating it as "approved" is how merchants lose money.</p>
+        <p>So every payment attempt gets an idempotency key before it's sent, and the library follows one rule:</p>
+        <ol class="pipeline" aria-label="Recovery steps">
+          <li>Look the payment up by its key</li>
+          <li>Found: use that answer, don't resend</li>
+          <li>Not found: resend with the same key</li>
+          <li>Lookup fails: try again, up to three times</li>
+          <li>Still unknown: stop and flag for reconciliation</li>
+        </ol>
+        <p>It never retries with a new key to get unstuck. The HTTP client's own silent retries are switched off too, so every retry is a deliberate decision in one place.</p>
+      </div>
+      <div>
+        <h3>The scenarios it survives</h3>
+        <ul class="checklist">
+          <li><strong>Timeout after charge.</strong> Finds the charge by key and shows it as approved. Charged once.</li>
+          <li><strong>Gateway error before charge.</strong> Confirms the gateway never got it, resends with the same key. Charged once.</li>
+          <li><strong>Device offline.</strong> Nothing left the device, so it says so and offers a retry.</li>
+          <li><strong>Gateway down.</strong> Can't confirm either way, so it stops and shows the key to reconcile.</li>
+          <li><strong>Decline.</strong> A normal answer, not an error. Refund and void stay disabled.</li>
+          <li><strong>Refund larger than the sale.</strong> Rejected, nothing refunded.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="test-title">
+    <div class="wrap">
+      <div class="section-intro">
+        <h2 id="test-title">How it's tested</h2>
+        <p>The key tests check two things: what the user is told, and how many times the gateway was asked to charge. If that count isn't asserted, the double-charge risk isn't tested.</p>
+      </div>
+      <div class="work">
+        <article>
+          <h3>Recovery logic</h3>
+          <p class="tools">JUnit, a scripted fake gateway</p>
+          <p>Each failure is scripted call by call: timeout then found, 503 then not found, a flaky connection during the lookup, a resend that times out too. The tests assert the exact sequence of submits and lookups.</p>
+        </article>
+        <article>
+          <h3>HTTP layer</h3>
+          <p class="tools">OkHttp MockWebServer</p>
+          <p>A real local HTTP server checks the headers, the JSON, and how every status code, timeout and dropped connection maps to "nothing sent", "rejected" or "unknown".</p>
+        </article>
+        <article>
+          <h3>End to end, and from Java</h3>
+          <p class="tools">Simulated gateway, JUnit from Java</p>
+          <p>The full stack runs against a simulated gateway for each scenario. A separate test calls the library from plain Java, because many payment integrations are written in Java.</p>
+        </article>
+        <article>
+          <h3>Android UI on an emulator</h3>
+          <p class="tools">Jetpack Compose UI tests, GitHub Actions, Pixel 6 API 34</p>
+          <p>Every push boots an Android emulator in CI and runs the app's UI tests: entering an amount, choosing a failure, and checking what the screen shows. App logic also has JVM unit tests and Android lint.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="claude-title">
+    <div class="wrap two-col">
+      <div class="prose">
+        <h2 id="claude-title">How I used Claude</h2>
+        <p>This is my first Kotlin project. I came to it from C#, Dart and a proprietary POS language, and built it with Claude Code the same way I built PepMinder: I set the rules and the tests, Claude writes code to meet them, and nothing merges until CI is green.</p>
+        <p>The rules live in the repo's <a href="https://github.com/productforge-stack/payment-integration-sandbox/blob/main/CLAUDE.md">CLAUDE.md</a>: money as whole cents, one idempotency key per payment, look up before resending, never lower the coverage gate.</p>
+        <p>I also wrote a <a href="https://github.com/productforge-stack/payment-integration-sandbox/blob/main/.claude/skills/payment-integration-review/SKILL.md">Claude skill</a> that reviews any payment integration, ours or a customer's, against the same checklist and lists the tests that are missing.</p>
+      </div>
+      <div class="prose">
+        <h2>Written for customers too</h2>
+        <p>Integration work is half code and half explaining it. The repo includes what I'd hand a customer:</p>
+        <ul class="checklist">
+          <li>An <a href="https://github.com/productforge-stack/payment-integration-sandbox/blob/main/docs/INTEGRATION_GUIDE.md">integration guide</a> with the API, Kotlin and Java examples, and a go-live validation checklist</li>
+          <li>A <a href="https://github.com/productforge-stack/payment-integration-sandbox/blob/main/docs/TROUBLESHOOTING.md">troubleshooting table</a> written as support answers: symptom, cause, how to confirm it, fix</li>
+          <li>A sandbox app a customer can run to see each failure and what correct handling looks like</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact" aria-labelledby="contact-title">
+    <div class="wrap">
+      <h2 id="contact-title">Want to walk through the code together?</h2>
+      <p>I'm happy to go through any part of it: the recovery logic, the tests, or how I'd adapt it to a real gateway's SDK.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="mailto:tduffy32@gmail.com">tduffy32@gmail.com</a>
+        <a class="btn" href="https://www.linkedin.com/in/timothyduffy-qa">LinkedIn profile</a>
+        <a class="btn" href="../../">Back to overview</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>Tim Duffy, Foxborough, MA</span>
+    <span>A sample against a simulated gateway. Not affiliated with any payment provider.</span>
+  </div>
+</footer>
+</body>
+</html>

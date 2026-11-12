@@ -241,3 +241,13 @@ section:first-of-type { border-top: 0; }
   .site-head, .contact .actions, .receipt { box-shadow: none; transform: none; }
   body { background: #fff; }
 }
+
+/* Text-only case study hero and a section with no top padding */
+.cs-hero.cs-hero-text .wrap { grid-template-columns: minmax(0, 1fr); }
+.cs-hero.cs-hero-text h1 { max-width: 22ch; }
+.cs-hero.cs-hero-text .lede { max-width: 58ch; }
+section.flush { padding-top: 0; border-top: 0; }
+.checklist strong { font-weight: 700; }
+
+.feature.feature-text { grid-template-columns: minmax(0, 1fr); }
+.feature.feature-text p { max-width: 70ch; }
